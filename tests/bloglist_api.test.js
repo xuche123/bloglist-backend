@@ -6,7 +6,6 @@ const Blog = require('../models/blog')
 const helper = require('./test_helper')
 
 const api = supertest(app)
-// jest.setTimeout(100000)
 
 // fix for "Jest did not exit one second after the test run has completed."
 beforeAll(async () => {
@@ -67,6 +66,25 @@ test('blogs without likes have 0 likes', async () => {
     expect(target[0].likes).toBe(0)
 })
 
+test('blogs can be updated', async () => {
+    const update = {
+        likes : 999
+    }
+
+    const blogsAtStart = await helper.blogsInDb()
+
+    const blogToUpdate = blogsAtStart[0]
+
+    await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(update)
+        .expect(200)
+    
+    const response = await helper.blogsInDb()
+    const likes = response.map(r => r.likes)
+    expect(likes).toContain(999)
+})
+
 describe('fails with statuscode 400 if', () => {
 
     test('note does not exist', async () => {
@@ -102,6 +120,23 @@ describe('fails with statuscode 400 if', () => {
     })
 })
 
+describe('deletion of a note', () => {
+    test('succeeds with status code 204 if id is valid', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogToDelete = blogsAtStart[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+        
+        const blogsAtEnd = await helper.blogsInDb()
+
+        expect(blogsAtEnd).toHaveLength(blogsAtStart.length - 1)
+        const title = blogsAtEnd.map(blog => blog.title)
+
+        expect(title).not.toContain(blogToDelete.title)
+    })
+})
 
 
 afterAll(async () => {
