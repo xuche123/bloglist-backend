@@ -1,0 +1,14 @@
+GET http://localhost:3003/api/users
+
+###
+GET http://localhost:3003/api/users/63d2749296fddc8d722864f7
+
+###
+POST http://localhost:3003/api/users
+content-type: application/json
+
+{
+    "username": "root1",
+    "name": "Superuser",
+    "password": "sa"
+}
